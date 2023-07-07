@@ -29,8 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.example.jetpackcomposecamera.R
-import com.example.jetpackcomposecamera.data.model.ImageModel
-import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -44,7 +42,7 @@ fun CameraView(
     executor: Executor,
     onImageCaptured: (Uri) -> Unit,
     onError: (ImageCaptureException) -> Unit,
-    viewModel: CameraViewModel
+    //viewModel: CameraViewModel
 ) {
 
 
@@ -86,7 +84,7 @@ fun CameraView(
                     executor = executor,
                     onImageCaptured = onImageCaptured,
                     onError = onError,
-                    viewModel = viewModel
+                    //viewModel = viewModel
                 )
             },
 
@@ -113,7 +111,7 @@ private fun takePhoto(
     executor: Executor,
     onImageCaptured: (Uri) -> Unit,
     onError: (ImageCaptureException) -> Unit,
-    viewModel: CameraViewModel
+    //viewModel: CameraViewModel
 ) {
 
     val photoFile = File(
@@ -122,7 +120,7 @@ private fun takePhoto(
     )
 
 
-    viewModel.insertData(ImageModel(0,"Özkan",photoFile.name.toString(),photoFile.name.toString(),photoFile.path.toString()))
+    //viewModel.insertData(ImageModel(0,"Özkan",photoFile.name.toString(),photoFile.name.toString(),photoFile.path.toString()))
 
     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
