@@ -1,4 +1,4 @@
-package com.example.jetpackcomposecamera
+package com.example.jetpackcomposecamera.presentation.camera_screen
 
 import android.content.Context
 import android.net.Uri
@@ -28,6 +28,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import com.example.jetpackcomposecamera.R
+import com.example.jetpackcomposecamera.data.model.ImageModel
+import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -40,8 +43,11 @@ fun CameraView(
     fileDirectory: File,
     executor: Executor,
     onImageCaptured: (Uri) -> Unit,
-    onError: (ImageCaptureException) -> Unit
+    onError: (ImageCaptureException) -> Unit,
+    viewModel: CameraViewModel
 ) {
+
+
 
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val context = LocalContext.current
@@ -79,9 +85,12 @@ fun CameraView(
                     outputDirectory = fileDirectory,
                     executor = executor,
                     onImageCaptured = onImageCaptured,
-                    onError = onError
+                    onError = onError,
+                    viewModel = viewModel
                 )
             },
+
+
             content = {
                 Icon(
                     painter = painterResource(id = R.drawable.lens_v),
@@ -103,13 +112,17 @@ private fun takePhoto(
     outputDirectory: File,
     executor: Executor,
     onImageCaptured: (Uri) -> Unit,
-    onError: (ImageCaptureException) -> Unit
+    onError: (ImageCaptureException) -> Unit,
+    viewModel: CameraViewModel
 ) {
 
     val photoFile = File(
         outputDirectory,
         SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
     )
+
+
+    viewModel.insertData(ImageModel(0,"Özkan",photoFile.name.toString(),photoFile.name.toString(),photoFile.path.toString()))
 
     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
@@ -125,6 +138,9 @@ private fun takePhoto(
     })
 }
 
+
+
+
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine {
         ProcessCameraProvider.getInstance(this).also { future  ->
@@ -133,3 +149,4 @@ private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
             }, ContextCompat.getMainExecutor(this))
         }
     }
+

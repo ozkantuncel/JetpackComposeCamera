@@ -1,4 +1,4 @@
-package com.example.jetpackcomposecamera.ui.theme
+package com.example.jetpackcomposecamera.presentation.ui.theme
 
 import android.app.Activity
 import android.os.Build
