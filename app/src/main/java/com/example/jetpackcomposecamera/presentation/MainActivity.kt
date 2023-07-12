@@ -1,9 +1,10 @@
-package com.example.jetpackcomposecamera
+package com.example.jetpackcomposecamera.presentation
 
 import android.Manifest
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -15,11 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import coil.compose.rememberAsyncImagePainter
+import com.example.jetpackcomposecamera.R
+import com.example.jetpackcomposecamera.presentation.camera_screen.CameraView
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class MainActivity : ComponentActivity() {
+
 
     private lateinit var directoryFile: File
     private lateinit var cameraExecutor: ExecutorService
@@ -37,17 +41,26 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
+
         super.onCreate(savedInstanceState)
         setContent {
+
+           /* val context = LocalContext.current
+
+            val viewModel:CameraViewModel = viewModel(factory = CameraViewModelFactory(context.applicationContext as Application))*/
+
             if(showCamera.value){
                 CameraView(
                     fileDirectory = directoryFile,
                     executor = cameraExecutor,
                     onImageCaptured = ::handleImageCapture,
-                    onError = {}
+                    onError = {},
+                    //viewModel = viewModel
                 )
             }
             if(showPhoto.value){
+                Log.e("Hata","$photoUri")
                 Image(
                     painter = rememberAsyncImagePainter(photoUri),
                     contentDescription = null,
