@@ -17,5 +17,5 @@ interface ImageDao {
     suspend fun insertImage(image:ImageModel)
 
     @Delete
-    fun deleteImage(image: ImageModel)
+    suspend fun deleteImage(image: ImageModel)
 }
