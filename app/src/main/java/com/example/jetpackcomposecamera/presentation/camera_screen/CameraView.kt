@@ -1,7 +1,6 @@
 package com.example.jetpackcomposecamera.presentation.camera_screen
 
 import android.content.Context
-import android.net.Uri
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -28,40 +27,83 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import android.Manifest
+import android.app.Application
+import android.content.pm.PackageManager
+import android.os.Environment
+import android.util.Log
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
+import com.example.jetpackcomposecamera.data.model.ImageModel
+import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
+import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModelFactory
+import com.example.jetpackcomposecamera.presentation.navigation.Screen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Composable
 fun CameraView(
-    fileDirectory: File,
-    executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
-    onError: (ImageCaptureException) -> Unit,
-    //viewModel: CameraViewModel
+    navController: NavController,
 ) {
+    val context = LocalContext.current
+
+    var hasCamPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            hasCamPermission = granted
+
+        }
+    )
+
+    val viewModel: CameraViewModel =
+        viewModel(factory = CameraViewModelFactory(context.applicationContext as Application))
+
+    val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
 
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     val lensFacing = CameraSelector.LENS_FACING_BACK
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
+
 
     val preview = Preview.Builder().build()
 
     val previewView = remember { PreviewView(context) }
 
-    val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
+    val imageCapture: ImageCapture = remember {
+        ImageCapture.Builder().build()
+    }
 
     val cameraSelector = CameraSelector.Builder()
         .requireLensFacing(lensFacing)
         .build()
 
-    LaunchedEffect(lensFacing) {
+    LaunchedEffect(hasCamPermission) {
+        launcher.launch(Manifest.permission.CAMERA)
+
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(
@@ -73,34 +115,53 @@ fun CameraView(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
+
+
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-        AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
-        IconButton(
-            modifier = Modifier.padding(bottom = 20.dp),
-            onClick = {
-                takePhoto(
-                    imageCapture = imageCapture,
-                    outputDirectory = fileDirectory,
-                    executor = executor,
-                    onImageCaptured = onImageCaptured,
-                    onError = onError,
-                    //viewModel = viewModel
-                )
-            },
+        if (hasCamPermission) {
+            AndroidView(
+                factory = { previewView },
+                modifier = Modifier.fillMaxSize()
+            )
+            IconButton(
+                modifier = Modifier.padding(bottom = 20.dp),
+                onClick = {
+                    takePhoto(
+                        imageCapture = imageCapture,
+                        outputDirectory = getDirectoryFile(context = context),
+                        executor = cameraExecutor,
+                        viewModel = viewModel,
+                        onPhotoSaved = {
+                            CoroutineScope(Dispatchers.Main).launch {
+                                navController.popBackStack()
+                                navController.navigate(Screen.MainScreen.route)
+                            }
+                        }
+                    )
+                },
+                content = {
+                    Icon(
+                        painter = painterResource(id = R.drawable.lens_v),
+                        contentDescription = null,
+                        tint = Color.Blue,
+                        modifier = Modifier
+                            .size(150.dp)
+                            .padding(1.dp)
+                            .border(1.dp, Color.White, CircleShape)
+                    )
+                }
+            )
+        } else {
+            Toast.makeText(context, "İzin verilmedi", Toast.LENGTH_SHORT).show()
 
-
-            content = {
-                Icon(
-                    painter = painterResource(id = R.drawable.lens_v),
-                    contentDescription = null,
-                    tint = Color.Blue,
-                    modifier = Modifier
-                        .size(150.dp)
-                        .padding(1.dp)
-                        .border(1.dp, Color.White, CircleShape)
-                )
-            }
-        )
+            navController.popBackStack()
+            navController.navigate(Screen.MainScreen.route)
+        }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraExecutor.shutdown()
+        }
     }
 }
 
@@ -109,39 +170,53 @@ private fun takePhoto(
     imageCapture: ImageCapture,
     outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
-    onError: (ImageCaptureException) -> Unit,
-    //viewModel: CameraViewModel
+    viewModel: CameraViewModel,
+    onPhotoSaved: () -> Unit
 ) {
+
+    val photoTime = SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis())
 
     val photoFile = File(
         outputDirectory,
-        SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+        "$photoTime.jpg"
     )
 
 
-    //viewModel.insertData(ImageModel(0,"Özkan",photoFile.name.toString(),photoFile.name.toString(),photoFile.path.toString()))
+    viewModel.insertData(
+        ImageModel(
+            0,
+            "Özkan",
+            photoFile.nameWithoutExtension,
+            photoTime,
+            photoFile.path.toString()
+        )
+    )
 
     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
     imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
         override fun onError(exception: ImageCaptureException) {
-            onError(exception)
+            exception.printStackTrace()
         }
 
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-            val savedUri = Uri.fromFile(photoFile)
-            onImageCaptured(savedUri)
+            Log.d("DEBUG", photoFile.path)
+            onPhotoSaved()
         }
     })
+
 }
 
-
-
+private fun getDirectoryFile(context: Context): File {
+    val mediaDir = context.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
+        File(it, context.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
+    }
+    return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
+}
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine {
-        ProcessCameraProvider.getInstance(this).also { future  ->
+        ProcessCameraProvider.getInstance(this).also { future ->
             future.addListener({
                 it.resume(future.get())
             }, ContextCompat.getMainExecutor(this))
