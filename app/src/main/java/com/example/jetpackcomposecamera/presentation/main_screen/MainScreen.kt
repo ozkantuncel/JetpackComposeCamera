@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,19 +25,16 @@ import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
+import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModelFactory
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.presentation.ui.theme.Purple40
-import java.io.File
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     navController: NavController
 ) {
-
     val context = LocalContext.current
 
     val viewModel: MainScreenViewModel =
@@ -44,7 +42,22 @@ fun MainScreen(
 
     val imageList = viewModel.listImage.observeAsState(listOf())
 
+    MainPage(
+        navController = navController,
+        imageList = imageList,
+        deleteImage = {
+            viewModel.deleteData(it)
+        }
+    )
+}
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainPage(
+    navController: NavController,
+    imageList: State<List<ImageModel>>,
+    deleteImage: (ImageModel) -> Unit
+) {
     Scaffold(topBar = {
         TopAppBar(
             title = {},
@@ -54,8 +67,6 @@ fun MainScreen(
         Column(
             modifier = Modifier.padding(padding)
         ) {
-
-
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Top,
@@ -64,13 +75,11 @@ fun MainScreen(
                 items(imageList.value) { image ->
 
                     CardImage(image = image) {
-                        viewModel.deleteData(it)
-                        File(it.image_dir).delete()
+                        deleteImage(it)
                     }
                 }
             }
         }
-
     }, floatingActionButton = {
         FloatingActionButton(onClick = {
             navController.popBackStack()
@@ -82,7 +91,6 @@ fun MainScreen(
             )
         }
     }, floatingActionButtonPosition = FabPosition.End)
-
 
 }
 

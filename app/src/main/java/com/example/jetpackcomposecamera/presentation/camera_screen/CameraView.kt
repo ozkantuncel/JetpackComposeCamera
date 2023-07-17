@@ -31,8 +31,7 @@ import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Environment
-import android.util.Log
-import android.widget.Toast
+import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
@@ -61,6 +60,10 @@ fun CameraView(
 ) {
     val context = LocalContext.current
 
+    val errorDialogState = remember { mutableStateOf(false) }
+    val errorTitle = remember { mutableStateOf("") }
+    val errorMsg = remember { mutableStateOf("") }
+
     var hasCamPermission by remember {
         mutableStateOf(
             ContextCompat.checkSelfPermission(
@@ -74,20 +77,51 @@ fun CameraView(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
             hasCamPermission = granted
-
         }
     )
+
+    LaunchedEffect(key1 = true) {
+        launcher.launch(Manifest.permission.CAMERA)
+    }
 
     val viewModel: CameraViewModel =
         viewModel(factory = CameraViewModelFactory(context.applicationContext as Application))
 
-    val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+    if (hasCamPermission) {
+        CameraViewPage(
+            navController = navController,
+            context = context,
+            errorDialogState = errorDialogState,
+            errorTitle = errorTitle,
+            errorMsg = errorMsg,
+            addImage = {
+                viewModel.insertData(it)
+            }
+        )
+    } else {
+        /* JCCAlertDialog(
+             openTheDialog = errorDialogState,
+             content = {},
+             title = "İzin",
+             message = "Kamera izni verilmedi"
+         )*/
+    }
+}
 
+@Composable
+fun CameraViewPage(
+    navController: NavController,
+    context: Context,
+    errorDialogState: MutableState<Boolean>,
+    errorTitle: MutableState<String>,
+    errorMsg: MutableState<String>,
+    addImage: (ImageModel) -> Unit
+) {
+    val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
     val lensFacing = CameraSelector.LENS_FACING_BACK
-
 
     val preview = Preview.Builder().build()
 
@@ -101,9 +135,7 @@ fun CameraView(
         .requireLensFacing(lensFacing)
         .build()
 
-    LaunchedEffect(hasCamPermission) {
-        launcher.launch(Manifest.permission.CAMERA)
-
+    LaunchedEffect(lensFacing) {
         val cameraProvider = context.getCameraProvider()
         cameraProvider.unbindAll()
         cameraProvider.bindToLifecycle(
@@ -115,48 +147,57 @@ fun CameraView(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
-
+    if (errorDialogState.value) {
+        JCCAlertDialog(
+            openTheDialog = errorDialogState,
+            content = {},
+            title = errorTitle.value,
+            message = errorMsg.value
+        )
+    }
 
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-        if (hasCamPermission) {
-            AndroidView(
-                factory = { previewView },
-                modifier = Modifier.fillMaxSize()
-            )
-            IconButton(
-                modifier = Modifier.padding(bottom = 20.dp),
-                onClick = {
-                    takePhoto(
-                        imageCapture = imageCapture,
-                        outputDirectory = getDirectoryFile(context = context),
-                        executor = cameraExecutor,
-                        viewModel = viewModel,
-                        onPhotoSaved = {
-                            CoroutineScope(Dispatchers.Main).launch {
-                                navController.popBackStack()
-                                navController.navigate(Screen.MainScreen.route)
-                            }
-                        }
-                    )
-                },
-                content = {
-                    Icon(
-                        painter = painterResource(id = R.drawable.lens_v),
-                        contentDescription = null,
-                        tint = Color.Blue,
-                        modifier = Modifier
-                            .size(150.dp)
-                            .padding(1.dp)
-                            .border(1.dp, Color.White, CircleShape)
-                    )
-                }
-            )
-        } else {
-            Toast.makeText(context, "İzin verilmedi", Toast.LENGTH_SHORT).show()
 
-            navController.popBackStack()
-            navController.navigate(Screen.MainScreen.route)
-        }
+        AndroidView(
+            factory = { previewView },
+            modifier = Modifier.fillMaxSize()
+        )
+        IconButton(
+            modifier = Modifier.padding(bottom = 20.dp),
+            onClick = {
+                takePhoto(
+                    imageCapture = imageCapture,
+                    outputDirectory = getDirectoryFile(context = context),
+                    executor = cameraExecutor,
+                    addImage = {
+                        addImage(it)
+                    },
+                    onError = { imageCaptureError ->
+                        errorDialogState.value = true
+                        errorTitle.value = "Camera Sorunu"
+                        errorMsg.value = imageCaptureError.message.toString()
+                    },
+                    onPhotoSaved = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navController.popBackStack()
+                            navController.navigate(Screen.MainScreen.route)
+                        }
+                    }
+                )
+            },
+            content = {
+                Icon(
+                    painter = painterResource(id = R.drawable.lens_v),
+                    contentDescription = null,
+                    tint = Color.Blue,
+                    modifier = Modifier
+                        .size(150.dp)
+                        .padding(1.dp)
+                        .border(1.dp, Color.White, CircleShape)
+                )
+            }
+        )
+
     }
     DisposableEffect(Unit) {
         onDispose {
@@ -170,10 +211,10 @@ private fun takePhoto(
     imageCapture: ImageCapture,
     outputDirectory: File,
     executor: Executor,
-    viewModel: CameraViewModel,
+    addImage: (ImageModel) -> Unit,
+    onError: (ImageCaptureException) -> Unit,
     onPhotoSaved: () -> Unit
 ) {
-
     val photoTime = SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis())
 
     val photoFile = File(
@@ -181,8 +222,7 @@ private fun takePhoto(
         "$photoTime.jpg"
     )
 
-
-    viewModel.insertData(
+    addImage(
         ImageModel(
             0,
             "Özkan",
@@ -196,15 +236,13 @@ private fun takePhoto(
 
     imageCapture.takePicture(outputOptions, executor, object : ImageCapture.OnImageSavedCallback {
         override fun onError(exception: ImageCaptureException) {
-            exception.printStackTrace()
+            onError(exception)
         }
 
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-            Log.d("DEBUG", photoFile.path)
             onPhotoSaved()
         }
     })
-
 }
 
 private fun getDirectoryFile(context: Context): File {

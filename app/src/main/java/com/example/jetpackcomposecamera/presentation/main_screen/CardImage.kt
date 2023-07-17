@@ -33,14 +33,12 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CardImage(
     image: ImageModel,
     onButtonClick: (ImageModel) -> Unit
 ) {
-
     var expand by remember {
         mutableStateOf(false)
     }
@@ -74,7 +72,6 @@ fun CardImage(
                     .animateContentSize()
             )
             if (!expand) {
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -104,20 +101,14 @@ fun CardImage(
                             fontWeight = FontWeight.SemiBold
                         )
                     }
-
                     IconButton(onClick = { onButtonClick(image) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.del_ico),
                             contentDescription = null
                         )
-
                     }
-
                 }
-
-
             }
-
         }
     }
 }

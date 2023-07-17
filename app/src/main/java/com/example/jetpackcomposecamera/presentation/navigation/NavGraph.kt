@@ -7,16 +7,16 @@ import androidx.navigation.compose.composable
 import com.example.jetpackcomposecamera.presentation.camera_screen.CameraView
 import com.example.jetpackcomposecamera.presentation.main_screen.MainScreen
 
-
 @Composable
 fun NavGraph(
     navHostController: NavHostController,
     startDestination: String,
 ) {
+    // NavHost bileşeni
     NavHost(
         navController = navHostController,
+        // startDestination özelliğine başlangıç hedefi
         startDestination = startDestination,
-
     ) {
         composable(route = Screen.MainScreen.route){
             MainScreen(navController = navHostController)
@@ -25,6 +25,4 @@ fun NavGraph(
             CameraView(navController = navHostController)
         }
     }
-
-
 }
