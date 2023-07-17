@@ -1,7 +1,6 @@
 package com.example.jetpackcomposecamera.presentation.camera_screen
 
 import android.content.Context
-import android.net.Uri
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -28,34 +27,109 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import android.Manifest
+import android.app.Application
+import android.content.pm.PackageManager
+import android.os.Environment
+import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
+import com.example.jetpackcomposecamera.data.model.ImageModel
+import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
+import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModelFactory
+import com.example.jetpackcomposecamera.presentation.navigation.Screen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.concurrent.Executor
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Composable
 fun CameraView(
-    fileDirectory: File,
-    executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
-    onError: (ImageCaptureException) -> Unit,
-    //viewModel: CameraViewModel
+    navController: NavController,
 ) {
+    val context = LocalContext.current
 
+    val errorDialogState = remember { mutableStateOf(false) }
+    val errorTitle = remember { mutableStateOf("") }
+    val errorMsg = remember { mutableStateOf("") }
 
+    var hasCamPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            hasCamPermission = granted
+        }
+    )
+
+    LaunchedEffect(key1 = true) {
+        launcher.launch(Manifest.permission.CAMERA)
+    }
+
+    val viewModel: CameraViewModel =
+        viewModel(factory = CameraViewModelFactory(context.applicationContext as Application))
+
+    if (hasCamPermission) {
+        CameraViewPage(
+            navController = navController,
+            context = context,
+            errorDialogState = errorDialogState,
+            errorTitle = errorTitle,
+            errorMsg = errorMsg,
+            addImage = {
+                viewModel.insertData(it)
+            }
+        )
+    } else {
+        /* JCCAlertDialog(
+             openTheDialog = errorDialogState,
+             content = {},
+             title = "İzin",
+             message = "Kamera izni verilmedi"
+         )*/
+    }
+}
+
+@Composable
+fun CameraViewPage(
+    navController: NavController,
+    context: Context,
+    errorDialogState: MutableState<Boolean>,
+    errorTitle: MutableState<String>,
+    errorMsg: MutableState<String>,
+    addImage: (ImageModel) -> Unit
+) {
+    val cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     val lensFacing = CameraSelector.LENS_FACING_BACK
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
 
     val preview = Preview.Builder().build()
 
     val previewView = remember { PreviewView(context) }
 
-    val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
+    val imageCapture: ImageCapture = remember {
+        ImageCapture.Builder().build()
+    }
 
     val cameraSelector = CameraSelector.Builder()
         .requireLensFacing(lensFacing)
@@ -73,22 +147,44 @@ fun CameraView(
         preview.setSurfaceProvider(previewView.surfaceProvider)
     }
 
+    if (errorDialogState.value) {
+        JCCAlertDialog(
+            openTheDialog = errorDialogState,
+            content = {},
+            title = errorTitle.value,
+            message = errorMsg.value
+        )
+    }
+
     Box(contentAlignment = Alignment.BottomCenter, modifier = Modifier.fillMaxSize()) {
-        AndroidView({ previewView }, modifier = Modifier.fillMaxSize())
+
+        AndroidView(
+            factory = { previewView },
+            modifier = Modifier.fillMaxSize()
+        )
         IconButton(
             modifier = Modifier.padding(bottom = 20.dp),
             onClick = {
                 takePhoto(
                     imageCapture = imageCapture,
-                    outputDirectory = fileDirectory,
-                    executor = executor,
-                    onImageCaptured = onImageCaptured,
-                    onError = onError,
-                    //viewModel = viewModel
+                    outputDirectory = getDirectoryFile(context = context),
+                    executor = cameraExecutor,
+                    addImage = {
+                        addImage(it)
+                    },
+                    onError = { imageCaptureError ->
+                        errorDialogState.value = true
+                        errorTitle.value = "Camera Sorunu"
+                        errorMsg.value = imageCaptureError.message.toString()
+                    },
+                    onPhotoSaved = {
+                        CoroutineScope(Dispatchers.Main).launch {
+                            navController.popBackStack()
+                            navController.navigate(Screen.MainScreen.route)
+                        }
+                    }
                 )
             },
-
-
             content = {
                 Icon(
                     painter = painterResource(id = R.drawable.lens_v),
@@ -101,6 +197,12 @@ fun CameraView(
                 )
             }
         )
+
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            cameraExecutor.shutdown()
+        }
     }
 }
 
@@ -109,18 +211,26 @@ private fun takePhoto(
     imageCapture: ImageCapture,
     outputDirectory: File,
     executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
+    addImage: (ImageModel) -> Unit,
     onError: (ImageCaptureException) -> Unit,
-    //viewModel: CameraViewModel
+    onPhotoSaved: () -> Unit
 ) {
+    val photoTime = SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis())
 
     val photoFile = File(
         outputDirectory,
-        SimpleDateFormat(filenameFormat, Locale.US).format(System.currentTimeMillis()) + ".jpg"
+        "$photoTime.jpg"
     )
 
-
-    //viewModel.insertData(ImageModel(0,"Özkan",photoFile.name.toString(),photoFile.name.toString(),photoFile.path.toString()))
+    addImage(
+        ImageModel(
+            0,
+            "Özkan",
+            photoFile.nameWithoutExtension,
+            photoTime,
+            photoFile.path.toString()
+        )
+    )
 
     val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
 
@@ -130,18 +240,21 @@ private fun takePhoto(
         }
 
         override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-            val savedUri = Uri.fromFile(photoFile)
-            onImageCaptured(savedUri)
+            onPhotoSaved()
         }
     })
 }
 
-
-
+private fun getDirectoryFile(context: Context): File {
+    val mediaDir = context.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
+        File(it, context.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
+    }
+    return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
+}
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine {
-        ProcessCameraProvider.getInstance(this).also { future  ->
+        ProcessCameraProvider.getInstance(this).also { future ->
             future.addListener({
                 it.resume(future.get())
             }, ContextCompat.getMainExecutor(this))
