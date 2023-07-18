@@ -28,19 +28,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import android.Manifest
-import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Environment
 import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
+import com.example.jetpackcomposecamera.di.JetpackComposeCameraApp
 import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
-import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModelFactory
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -59,6 +59,17 @@ fun CameraView(
     navController: NavController,
 ) {
     val context = LocalContext.current
+
+    // applicationComponent' i JetpackComposeCameraApp den aliyoruz
+    val appComponent = (context.applicationContext as JetpackComposeCameraApp).applicationComponent
+
+    // ApplicationComponent ' den mainScreenViewModelFactory 'i aliyoruz
+    val viewModelFactory = appComponent.cameraViewViewModelFactory()
+
+    // ViewModelProvider'ı den  CameraViewModel 'i aliyoruz
+    val viewModel = ViewModelProvider(context as ViewModelStoreOwner, viewModelFactory).get(
+        CameraViewModel::class.java
+    )
 
     val errorDialogState = remember { mutableStateOf(false) }
     val errorTitle = remember { mutableStateOf("") }
@@ -84,8 +95,6 @@ fun CameraView(
         launcher.launch(Manifest.permission.CAMERA)
     }
 
-    val viewModel: CameraViewModel =
-        viewModel(factory = CameraViewModelFactory(context.applicationContext as Application))
 
     if (hasCamPermission) {
         CameraViewPage(
