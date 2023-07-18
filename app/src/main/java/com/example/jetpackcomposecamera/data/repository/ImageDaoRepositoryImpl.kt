@@ -24,6 +24,9 @@ class ImageDaoRepositoryImpl(application: Application):ImageDaoRepository {
     }
     override suspend fun insertImage(imageModel: ImageModel) {
         database.imageDao().insertImage(image =imageModel )
+    }
 
+    override suspend fun deleteAll() {
+        database.imageDao().deleteAll()
     }
 }
