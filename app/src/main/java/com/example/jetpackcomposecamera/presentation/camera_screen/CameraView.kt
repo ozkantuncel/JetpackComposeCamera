@@ -30,7 +30,6 @@ import androidx.core.content.ContextCompat
 import android.Manifest
 import android.app.Application
 import android.content.pm.PackageManager
-import android.os.Environment
 import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -42,6 +41,7 @@ import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
 import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModelFactory
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
+import com.example.jetpackcomposecamera.util.mkDirControl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -167,7 +167,7 @@ fun CameraViewPage(
             onClick = {
                 takePhoto(
                     imageCapture = imageCapture,
-                    outputDirectory = getDirectoryFile(context = context),
+                    outputDirectory = context.mkDirControl(),
                     executor = cameraExecutor,
                     addImage = {
                         addImage(it)
@@ -245,12 +245,6 @@ private fun takePhoto(
     })
 }
 
-private fun getDirectoryFile(context: Context): File {
-    val mediaDir = context.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
-        File(it, context.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
-    }
-    return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
-}
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine {
