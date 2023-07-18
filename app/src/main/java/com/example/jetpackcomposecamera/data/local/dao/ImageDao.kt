@@ -26,6 +26,9 @@ interface ImageDao {
     @Delete
     suspend fun deleteImage(image: ImageModel)
 
+    @Query("DELETE FROM image_table")
+    suspend fun deleteAll()
+
     /*
     suspend anahtar vardır,
     bu metotların asekron olarak çalıştığını ve bir

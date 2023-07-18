@@ -36,4 +36,17 @@ class MainScreenViewModel(application: Application):AndroidViewModel(application
         }
     }
 
+    fun deleteAll(mkDir:File){
+        viewModelScope.launch {
+            repo.deleteAll()
+            fetchData()
+            mkDir.listFiles()?.let { files ->
+                for (file in files) {
+                    file.delete()
+                }
+            }
+
+        }
+    }
+
 }
