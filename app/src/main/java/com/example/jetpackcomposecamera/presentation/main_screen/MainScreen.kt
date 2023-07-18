@@ -1,6 +1,5 @@
 package com.example.jetpackcomposecamera.presentation.main_screen
 
-import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,29 +15,45 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
+import com.example.jetpackcomposecamera.di.JetpackComposeCameraApp
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
-import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModelFactory
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.presentation.ui.theme.Purple40
 
 @Composable
 fun MainScreen(
-    navController: NavController
+    navController: NavController,
 ) {
+
     val context = LocalContext.current
 
-    val viewModel: MainScreenViewModel =
-        viewModel(factory = MainScreenViewModelFactory(context.applicationContext as Application))
+    // applicationComponent' i JetpackComposeCameraApp den aliyoruz
+    val appComponent = (context.applicationContext as JetpackComposeCameraApp).applicationComponent
+
+    // ApplicationComponent ' den mainScreenViewModelFactory 'i aliyoruz
+    val viewModelFactory = appComponent.mainScreenViewModelFactory()
+
+    // ViewModelProvider'ı den  MainScreenViewModel'i aliyoruz
+    val viewModel = ViewModelProvider(
+        context as ViewModelStoreOwner,
+        viewModelFactory
+    ).get(MainScreenViewModel::class.java)
+
+    LaunchedEffect(key1 = true) {
+        viewModel.fetchData()
+    }
 
     val imageList = viewModel.listImage.observeAsState(listOf())
 
