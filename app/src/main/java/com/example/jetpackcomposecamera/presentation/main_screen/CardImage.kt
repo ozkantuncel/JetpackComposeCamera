@@ -59,6 +59,7 @@ fun CardImage(
             stroke = if (expand) 2 else 1
         }
     ) {
+        // Row bileşeni, bileşenleri yatay yönde bir düzende yerleştirmek için kullanılır
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
