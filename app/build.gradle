@@ -69,8 +69,12 @@ dependencies {
 
 
     //LiveData
-    implementation "androidx.compose.runtime:runtime:1.4.3"
-    implementation "androidx.compose.runtime:runtime-livedata:1.4.3"
+    implementation "androidx.compose.runtime:runtime:$liveData"
+    implementation "androidx.compose.runtime:runtime-livedata:$liveData"
+
+    //Dagger
+    implementation "com.google.dagger:dagger:$dagger"
+    kapt "com.google.dagger:dagger-compiler:$dagger"
 
     // Navigating with Compose
     implementation "androidx.navigation:navigation-compose:$nav_version"
