@@ -13,6 +13,12 @@ buildscript {
         lottieVersion = "5.2.0"
         data_store_version = "1.0.0"
         splash_screen_version = "1.0.1"
+        liveData = "1.4.3"
+        dagger = "2.47"
+    }
+
+    dependencies {
+
     }
 }
 
