@@ -1,6 +1,7 @@
 package com.example.jetpackcomposecamera.presentation.main_screen
 
 import android.app.Application
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -31,6 +35,7 @@ import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.common.box.JCCBox
+import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModelFactory
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
@@ -45,6 +50,11 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
 
+    // Bir hata iletişim kutusunun durumunu tutmak için durum nesneleri
+    val errorDialogState = remember { mutableStateOf(false) }
+    val errorTitle = remember { mutableStateOf("") }
+    val errorMsg = remember { mutableStateOf("") }
+
     val viewModel: MainScreenViewModel =
         viewModel(factory = MainScreenViewModelFactory(context.applicationContext as Application))
 
@@ -57,23 +67,24 @@ fun MainScreen(
             viewModel.deleteData(it)
         },
         onClickDeleteButton = {
-            try {
-                val directory = context.mkDir()
-
-                val files = directory.listFiles()
-
-                if (files?.isNotEmpty() == true) {
-                    viewModel.deleteAll(directory)
-                    context.toast("All pictures deleted")
-                } else {
-                    context.toast("No image")
-                }
-
-            } catch (e: Exception) {
-                context.toast(e.localizedMessage)
-            }
+            deleteAllPictures(
+                context = context,
+                viewModel = viewModel,
+                errorState = errorDialogState,
+                errorTitle = errorTitle,
+                errorMsg = errorMsg
+            )
         }
     )
+    // Eğer errorDialogState değeri true ise, bir Custom bir Alert Dialog gösterir.
+    if (errorDialogState.value) {
+        JCCAlertDialog(
+            openTheDialog = errorDialogState,
+            content = {},
+            title = errorTitle.value,
+            message = errorMsg.value
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -85,6 +96,8 @@ fun MainPage(
     onClickDeleteButton: () -> Unit
 ) {
     // Genel olarak, Scaffold, bir ekranın veya sayfanın iskeletini oluşturmak için kullanılır.
+    // Material Design bileşenleri için yuvalar sağlar.
+    // Scaffold, bir Material Design uygulamasının temel yapısını uygulamak için kullanılırken, Surface bir Material Design yüzeyini temsil etmek için kullanılır.
     Scaffold(topBar = {
         //TopAppBar: Sayfanın üst kısmında yer alan bir navigasyon çubuğu.
         TopAppBar(
@@ -112,7 +125,7 @@ fun MainPage(
                         CardImage(image = image) {
                             deleteImage(it)
                         }
-
+                        //  // Her 3 öğeden sonra bir JCCBox bileşeni görünür
                         if ((index + 1) % 3 == 0 && index != imageList.value.lastIndex) {
                             JCCBox()
                         }
@@ -143,6 +156,34 @@ fun MainPage(
         }, floatingActionButtonPosition = FabPosition.End
     )
 
+}
+
+fun deleteAllPictures(
+    context: Context,
+    viewModel: MainScreenViewModel,
+    errorState: MutableState<Boolean>,
+    errorTitle: MutableState<String>,
+    errorMsg: MutableState<String>
+) {
+    try {
+        val directory = context.mkDir()
+
+        val files = directory.listFiles()
+
+        if (files?.isNotEmpty() == true) {
+            viewModel.deleteAll(directory)
+            context.toast("All pictures deleted")
+        } else {
+            errorState.value = true
+            errorTitle.value = "No Image"
+            errorMsg.value = "Image not added"
+        }
+
+    } catch (e: Exception) {
+        errorState.value = true
+        errorTitle.value = e.message.toString()
+        errorMsg.value = e.localizedMessage?.toString() ?: "Unknown error"
+    }
 }
 
 
