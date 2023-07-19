@@ -38,22 +38,18 @@ fun Context.toast(message: String?, length: Int = Toast.LENGTH_SHORT) {
  * Context uzerinden uygulama resim yolunu cekmeyi saglar
  */
 
-fun Context.mkDir():File{
-    return this.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
+fun Context.mkDir():File = this.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
         File(it, this.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
     } ?: error("Cannot create directory")
-}
+
 
 /**
  *Context nesnesini kullanarak resimlerin saklandığı dizini bulur
  */
 
-fun Context.mkDirControl():File{
-    val mediaDir = this.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
-        File(it, this.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
-    }
-    return if (mediaDir != null && mediaDir.exists()) mediaDir else this.filesDir
-}
+fun Context.mkDirControl(): File = this.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
+    File(it, this.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
+} ?: this.filesDir
 
 
 
