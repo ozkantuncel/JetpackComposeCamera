@@ -69,12 +69,12 @@ dependencies {
 
 
     //LiveData
-    implementation "androidx.compose.runtime:runtime:$liveData"
-    implementation "androidx.compose.runtime:runtime-livedata:$liveData"
+    implementation "androidx.compose.runtime:runtime:$liveData_version"
+    implementation "androidx.compose.runtime:runtime-livedata:$liveData_version"
 
     //Dagger
-    implementation "com.google.dagger:dagger:$dagger"
-    kapt "com.google.dagger:dagger-compiler:$dagger"
+    implementation "com.google.dagger:dagger:$dagger_version"
+    kapt "com.google.dagger:dagger-compiler:$dagger_version"
 
     // Navigating with Compose
     implementation "androidx.navigation:navigation-compose:$nav_version"
@@ -106,5 +106,5 @@ dependencies {
     implementation "androidx.room:room-paging:$room_version"
 
     // Lottie
-    implementation "com.airbnb.android:lottie-compose:$lottieVersion"
+    implementation "com.airbnb.android:lottie-compose:$lottie_version"
 }
