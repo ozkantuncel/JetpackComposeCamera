@@ -39,7 +39,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
-import com.example.jetpackcomposecamera.di.JetpackComposeCameraApp
 import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
@@ -55,21 +54,16 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
 @Composable
-fun CameraView(
+fun CameraViewScreen(
     navController: NavController,
 ) {
     val context = LocalContext.current
 
-    // applicationComponent' i JetpackComposeCameraApp den aliyoruz
-    val appComponent = (context.applicationContext as JetpackComposeCameraApp).applicationComponent
-
-    // ApplicationComponent ' den mainScreenViewModelFactory 'i aliyoruz
-    val viewModelFactory = appComponent.cameraViewViewModelFactory()
-
-    // ViewModelProvider'ı den  CameraViewModel 'i aliyoruz
-    val viewModel = ViewModelProvider(context as ViewModelStoreOwner, viewModelFactory).get(
-        CameraViewModel::class.java
-    )
+    // lazy delegate ile bir CameraViewModel nesnesi oluşturuyor.
+    // ViewModelProvider ile context'i bir ViewModelStoreOwner olarak kullanarak CameraViewModel nesnesini elde ediyoruz.
+    val viewModel: CameraViewModel by lazy {
+        ViewModelProvider(context as ViewModelStoreOwner).get(CameraViewModel::class.java)
+    }
 
     val errorDialogState = remember { mutableStateOf(false) }
     val errorTitle = remember { mutableStateOf("") }

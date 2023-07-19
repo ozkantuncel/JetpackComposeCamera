@@ -27,7 +27,6 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
-import com.example.jetpackcomposecamera.di.JetpackComposeCameraApp
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.presentation.ui.theme.Purple40
@@ -39,18 +38,13 @@ fun MainScreen(
 
     val context = LocalContext.current
 
-    // applicationComponent' i JetpackComposeCameraApp den aliyoruz
-    val appComponent = (context.applicationContext as JetpackComposeCameraApp).applicationComponent
+    // lazy delegate ile bir MainScreenViewModel nesnesi oluşturuyor.
+    // ViewModelProvider ile context'i bir ViewModelStoreOwner olarak kullanarak MainScreenViewModel nesnesini elde ediyoruz.
+    val viewModel: MainScreenViewModel by lazy {
+        ViewModelProvider(context as ViewModelStoreOwner).get(MainScreenViewModel::class.java)
+    }
 
-    // ApplicationComponent ' den mainScreenViewModelFactory 'i aliyoruz
-    val viewModelFactory = appComponent.mainScreenViewModelFactory()
-
-    // ViewModelProvider'ı den  MainScreenViewModel'i aliyoruz
-    val viewModel = ViewModelProvider(
-        context as ViewModelStoreOwner,
-        viewModelFactory
-    ).get(MainScreenViewModel::class.java)
-
+    // LaunchedEffect ile bir coroutine scope'u oluşturuyoruz ve bu scope içinde viewModel.fetchData() fonksiyonunu çağırıyoruz.
     LaunchedEffect(key1 = true) {
         viewModel.fetchData()
     }
