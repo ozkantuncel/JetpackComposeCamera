@@ -1,17 +1,22 @@
 package com.example.jetpackcomposecamera.presentation.main_screen.viewmodel
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.data.repository.ImageDaoRepositoryImpl
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.io.File
+import javax.inject.Inject
 
-class MainScreenViewModel(application: Application):AndroidViewModel(application){
-    private val repo = ImageDaoRepositoryImpl(getApplication())
+@HiltViewModel
+class MainScreenViewModel @Inject constructor(
+    private val repository: ImageDaoRepositoryImpl
+):ViewModel(){
+
     // LiveData olarak tanımlanan _listImage değişkeni, dışarıdan erişime açık değildir
     // LiveData, veri değişikliklerini otomatik olarak takip eden ve güncelleyen bir yapıdır
     private var _listImage =  MutableLiveData<List<ImageModel>>()
@@ -23,14 +28,14 @@ class MainScreenViewModel(application: Application):AndroidViewModel(application
     }
     private fun fetchData(){
         viewModelScope.launch {
-            val result = repo.getImagesByNameAsc()
+            val result = repository.getImagesByNameAsc()
             _listImage.value = result
         }
     }
 
     fun deleteData(imageModel: ImageModel){
         viewModelScope.launch {
-            repo.deleteImage(imageModel = imageModel)
+            repository.deleteImage(imageModel = imageModel)
             fetchData()
             File(imageModel.image_dir).delete()
         }
