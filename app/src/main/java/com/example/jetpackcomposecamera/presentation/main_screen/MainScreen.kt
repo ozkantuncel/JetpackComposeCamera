@@ -10,13 +10,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -30,12 +34,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.common.box.JCCBox
 import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
+import com.example.jetpackcomposecamera.presentation.common.overFlow.DropDownItemPager
+import com.example.jetpackcomposecamera.presentation.common.overFlow.OverflowMenu
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.presentation.ui.theme.Purple40
@@ -50,6 +55,10 @@ fun MainScreen(
 ) {
     val context = LocalContext.current
 
+    val showMenu = remember {
+        mutableStateOf(false)
+    }
+
     // Bir hata iletişim kutusunun durumunu tutmak için durum nesneleri
     val errorDialogState = remember { mutableStateOf(false) }
     val errorTitle = remember { mutableStateOf("") }
@@ -61,6 +70,7 @@ fun MainScreen(
     MainPage(
         navController = navController,
         imageList = imageList,
+        showMenu = showMenu,
         deleteImage = {
             viewModel.deleteData(it)
         },
@@ -90,6 +100,7 @@ fun MainScreen(
 fun MainPage(
     navController: NavController,
     imageList: State<List<ImageModel>>,
+    showMenu: MutableState<Boolean>,
     deleteImage: (ImageModel) -> Unit,
     onClickDeleteButton: () -> Unit
 ) {
@@ -100,6 +111,43 @@ fun MainPage(
         //TopAppBar: Sayfanın üst kısmında yer alan bir navigasyon çubuğu.
         TopAppBar(
             title = {},
+            navigationIcon = {
+                IconButton(onClick = {
+                    //TODO()
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = null
+                    )
+                }
+            },
+            actions = {
+                IconButton(onClick = {
+                    //TODO()
+                }) {
+                    Icon(
+                        imageVector = Icons.Outlined.Favorite,
+                        contentDescription = null
+                    )
+                }
+                OverflowMenu(showMenu = showMenu) {
+
+                    DropDownItemPager(
+                        imageVector = Icons.Outlined.Delete,
+                        text = "Delete All"
+                    ) {
+                        onClickDeleteButton()
+                        showMenu.value = false
+                    }
+
+                    DropDownItemPager(
+                        imageVector = Icons.Outlined.Warning,
+                        text = "Log out"
+                    ) {
+                        //TODO()
+                    }
+                }
+            },
             colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = Purple40)
         )
     }, content = { padding ->
@@ -128,13 +176,6 @@ fun MainPage(
                             JCCBox()
                         }
                     }
-                }
-                Button(
-                    onClick = { onClickDeleteButton() }, modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(16.dp)
-                ) {
-                    Text(text = "Delete All")
                 }
             }
         }
