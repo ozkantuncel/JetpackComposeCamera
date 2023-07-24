@@ -43,7 +43,7 @@ class MainScreenViewModel @Inject constructor(
 
     fun deleteAll(mkDir:File){
         viewModelScope.launch {
-            repo.deleteAll()
+            repository.deleteAll()
             fetchData()
             mkDir.listFiles()?.let { files ->
                 for (file in files) {

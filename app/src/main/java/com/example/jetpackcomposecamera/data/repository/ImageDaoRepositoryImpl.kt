@@ -19,16 +19,20 @@ class ImageDaoRepositoryImpl @Inject constructor(
         return try {
             val imageList = imageDao.getImagesByNameAsc()
             imageList
-        }catch (e:Exception){
+        } catch (e: Exception) {
             TODO()
         }
     }
+
     override suspend fun deleteImage(imageModel: ImageModel) {
         imageDao.deleteImage(image = imageModel)
     }
-    override suspend fun insertImage(imageModel: ImageModel) {
-        imageDao.insertImage(image =imageModel )
 
+    override suspend fun insertImage(imageModel: ImageModel) {
+        imageDao.insertImage(image = imageModel)
+
+
+    }
     override suspend fun deleteAll() {
         imageDao.deleteAll()
     }
