@@ -28,19 +28,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import android.Manifest
-import android.app.Application
 import android.content.pm.PackageManager
 import android.os.Environment
 import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.*
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
-import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModelFactory
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -57,6 +55,7 @@ import kotlin.coroutines.suspendCoroutine
 @Composable
 fun CameraView(
     navController: NavController,
+    viewModel: CameraViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
 
@@ -84,8 +83,6 @@ fun CameraView(
         launcher.launch(Manifest.permission.CAMERA)
     }
 
-    val viewModel: CameraViewModel =
-        viewModel(factory = CameraViewModelFactory(context.applicationContext as Application))
 
     if (hasCamPermission) {
         CameraViewPage(

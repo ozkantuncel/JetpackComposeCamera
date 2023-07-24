@@ -7,7 +7,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.jetpackcomposecamera.presentation.navigation.NavGraph
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.presentation.ui.theme.JetpackComposeCameraTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

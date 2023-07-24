@@ -1,6 +1,5 @@
 package com.example.jetpackcomposecamera.presentation.main_screen
 
-import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,23 +21,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
-import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModelFactory
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.presentation.ui.theme.Purple40
 
 @Composable
 fun MainScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: MainScreenViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-
-    val viewModel: MainScreenViewModel =
-        viewModel(factory = MainScreenViewModelFactory(context.applicationContext as Application))
 
     val imageList = viewModel.listImage.observeAsState(listOf())
 
