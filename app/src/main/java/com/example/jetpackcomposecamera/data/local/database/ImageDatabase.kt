@@ -1,11 +1,8 @@
 package com.example.jetpackcomposecamera.data.local.database
 
-import android.content.Context
 import androidx.room.Database
-import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.jetpackcomposecamera.data.local.dao.ImageDao
-import com.example.jetpackcomposecamera.util.Constant.DATABASE_NAME
 import com.example.jetpackcomposecamera.data.model.ImageModel
 
 
@@ -20,7 +17,7 @@ abstract class ImageDatabase : RoomDatabase() {
     // Bu metot, veritabanı işlemlerini gerçekleştirmek için kullanılır
     abstract fun imageDao(): ImageDao
 
-    companion object {
+    /*companion object {
         // Veritabanı örneğini tutan bir statik bir değişken
         // @Volatile anahtar kelimesi, bu değişkenin birden fazla iş parçacığı tarafından erişilebileceğini belirtir
         @Volatile
@@ -39,5 +36,5 @@ abstract class ImageDatabase : RoomDatabase() {
                 instance
             }
         }
-    }
+    }*/
 }
