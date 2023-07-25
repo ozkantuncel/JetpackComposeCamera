@@ -18,7 +18,14 @@ class ImageDaoRepositoryImpl @Inject constructor(
     override suspend fun getImagesByNameAsc(): List<ImageModel> {
         return try {
             val imageList = imageDao.getImagesByNameAsc()
-            imageList
+
+            val sortedList = imageList.groupBy { it.user_name }
+                .mapValues { it.value.size }
+                .toList()
+                .sortedByDescending { it.second }
+                .flatMap { entry -> imageList.filter { it.user_name == entry.first } }
+
+            sortedList
         } catch (e: Exception) {
             TODO()
         }
