@@ -1,8 +1,11 @@
 package com.example.jetpackcomposecamera.util
 
+import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Environment
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import com.example.jetpackcomposecamera.R
@@ -25,6 +28,23 @@ inline fun <reified Activity : ComponentActivity> Context.getActivity(): Activit
     }
 }
 
+
+
+/**
+ * Klavyeyi kapatmamizi saglar.
+ */
+
+
+fun Activity.hideKeyboard() {
+    hideKeyboard(currentFocus ?: View(this))
+}
+
+
+fun Context.hideKeyboard(view: View) {
+    val inputMethodManager = getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(view.windowToken, 0)
+}
+
 /**
  * Context uzerinden toast mesaj gondermemizi saglar.
  */
@@ -39,8 +59,8 @@ fun Context.toast(message: String?, length: Int = Toast.LENGTH_SHORT) {
  */
 
 fun Context.mkDir():File = this.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
-        File(it, this.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
-    } ?: error("Cannot create directory")
+    File(it, this.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
+} ?: error("Cannot create directory")
 
 
 /**
@@ -50,6 +70,3 @@ fun Context.mkDir():File = this.getExternalFilesDirs(Environment.DIRECTORY_PICTU
 fun Context.mkDirControl(): File = this.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
     File(it, this.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
 } ?: this.filesDir
-
-
-
