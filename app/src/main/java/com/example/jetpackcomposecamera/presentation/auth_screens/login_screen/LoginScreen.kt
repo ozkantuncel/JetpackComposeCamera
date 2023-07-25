@@ -49,7 +49,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,8 +56,13 @@ import androidx.navigation.NavController
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.UserModel
 import com.example.jetpackcomposecamera.presentation.auth_screens.login_screen.viewmodel.LoginScreenViewModel
-import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
+import com.example.jetpackcomposecamera.presentation.ui.theme.Color2App10
+import com.example.jetpackcomposecamera.presentation.ui.theme.ColorApp10
+import com.example.jetpackcomposecamera.presentation.ui.theme.ColorApp30
+import com.example.jetpackcomposecamera.presentation.ui.theme.ColorApp60
+import com.example.jetpackcomposecamera.presentation.ui.theme.ColorWhiteGray
+import com.example.jetpackcomposecamera.presentation.ui.theme.PurpleGrey40
 import com.example.jetpackcomposecamera.util.UiState
 import com.example.jetpackcomposecamera.util.hawk.Prefs.setStayIn
 import com.example.jetpackcomposecamera.util.hideKeyboard
@@ -71,14 +75,9 @@ fun LoginScreen(
 
     val activity = LocalContext.current as Activity
 
-
     val uiState = loginScreenViewModel.user.observeAsState().value
 
     val errorUserState = remember { mutableStateOf(false) }
-
-    val forgotPasswordDialogState = remember {
-        mutableStateOf(false)
-    }
     val errorTitle = remember { mutableStateOf("") }
 
 
@@ -104,29 +103,27 @@ fun LoginScreen(
         else -> {}
     }
 
-
     LoginScreenPage(
-
-        navController = navController,
-        forgotPasswordDialogState = forgotPasswordDialogState,
         activity = activity,
         errorUserState = errorUserState,
         errorTitle = errorTitle,
         onLoginClick = {
             loginScreenViewModel.fetchUser(it.user_name, it.user_password)
+        },
+        onRegisterClick = {
+            navController.popBackStack()
+            navController.navigate(Screen.RegisterScreen.route)
         }
     )
-
 }
 
 @Composable
 fun LoginScreenPage(
-    navController: NavController,
-    forgotPasswordDialogState: MutableState<Boolean>,
     activity: Activity,
     errorUserState: MutableState<Boolean>,
     errorTitle: MutableState<String>,
-    onLoginClick: (UserModel) -> Unit
+    onLoginClick: (UserModel) -> Unit,
+    onRegisterClick: () -> Unit
 ) {
     val username = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
@@ -134,75 +131,69 @@ fun LoginScreenPage(
     val rememberMeState = remember { mutableStateOf(false) }
     val passwordVisible = rememberSaveable { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .padding(horizontal = 10.dp, vertical = 10.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Spacer(modifier = Modifier.weight(0.5f))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Welcome!",
-                color = Color.Blue,
-                fontSize = 30.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-
+    Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 10.dp),
-            horizontalArrangement = Arrangement.Start
+                .background(ColorApp60)
+                .weight(0.3f)
+                .padding(horizontal = 15.dp, vertical = 15.dp),
+            horizontalArrangement = Arrangement.Start,
+            verticalAlignment = Alignment.Bottom
         ) {
-            Text(
-                text = "Kamera uygulaması, fotoğraf çekmenizi ve paylaşmanızı sağlayan bir mobil uygulamadır. Bu uygulama ile çektiğiniz anları arkadaşlarınızla ve diğer kullanıcılarla paylaşabilir, onların paylaşımlarını beğenebilir ve mesaj gönderebilirsiniz. Kamera uygulaması, fotoğraf sevdalıları için basit ve keyifli bir deneyim sunuyor.",
-                textAlign = TextAlign.Justify,
-                maxLines = 7,
-                color = Color.Gray,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W400
-            )
+            Column(
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    modifier = Modifier.padding(bottom = 10.dp),
+                    text = "Sign in to your Account",
+                    color = ColorWhiteGray,
+                    fontSize = 38.sp,
+                    fontWeight = FontWeight.ExtraBold
+                )
+
+                Text(
+                    modifier = Modifier.padding(bottom = 10.dp),
+                    text = "Sign in to your Account",
+                    color = ColorWhiteGray,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Light
+                )
+            }
         }
 
-        if (errorUserState.value) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                border = BorderStroke(2.dp, Color.Red),
-                content = {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = (if (errorTitle.value == "null") "Kulanici bilgileri yanlıs" else errorTitle.value),
-                            fontSize = 15.sp
-                        )
+
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 15.dp, vertical = 15.dp)
+                .fillMaxSize()
+                .weight(0.7f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            Spacer(modifier = Modifier.weight(0.10f))
+
+
+            if (errorUserState.value) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    border = BorderStroke(2.dp, Color.Red),
+                    content = {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = (if (errorTitle.value == "null") "Kulanici bilgileri yanlıs" else errorTitle.value),
+                                fontSize = 15.sp
+                            )
+                        }
                     }
-                }
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.CenterVertically),
-                imageVector = Icons.Outlined.Person,
-                contentDescription = null
-            )
+                )
+            }
 
             OutlinedTextField(
                 textStyle = TextStyle(textAlign = TextAlign.Start),
@@ -212,18 +203,31 @@ fun LoginScreenPage(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(70.dp),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = if (errorUserState.value) Color.Red else Color.Blue,
-                    cursorColor = if (errorUserState.value) Color.Red else Color.Green,
-                    textColor = if (errorUserState.value) Color.Red else Color.Blue
+                    focusedBorderColor = if (errorUserState.value) Color.Red else ColorApp10,
+                    cursorColor = if (errorUserState.value) Color.Red else Color2App10,
                 ),
                 placeholder = {
                     Text(
-                        text = "Username",
+                        text = "Rick",
                         fontSize = 15.sp
+                    )
+                },
+                label = {
+                    Text(
+                        text = "Username",
+                        color = PurpleGrey40
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        modifier = Modifier
+                            .size(30.dp),
+                        imageVector = Icons.Outlined.Person,
+                        contentDescription = null
                     )
                 },
                 isError = errorUserState.value,
@@ -232,21 +236,7 @@ fun LoginScreenPage(
                     keyboardType = KeyboardType.Text
                 )
             )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp)
-        ) {
-            Icon(
-                modifier = Modifier
-                    .size(40.dp)
-                    .align(Alignment.CenterVertically),
-                imageVector = Icons.Outlined.Lock,
-                contentDescription = null
-            )
-
+            Spacer(modifier = Modifier.weight(0.05f))
             OutlinedTextField(
                 textStyle = TextStyle(textAlign = TextAlign.Start),
                 value = password.value,
@@ -255,17 +245,31 @@ fun LoginScreenPage(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(70.dp),
                 shape = RoundedCornerShape(10.dp),
                 singleLine = true,
                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = Color.Blue,
-                    cursorColor = Color.Green
+                    focusedBorderColor = if (errorUserState.value) Color.Red else ColorApp10,
+                    cursorColor = if (errorUserState.value) Color.Red else Color2App10,
                 ),
                 placeholder = {
                     Text(
-                        text = "Password",
+                        text = "********",
                         fontSize = 15.sp
+                    )
+                },
+                label = {
+                    Text(
+                        text = "Password",
+                        color = PurpleGrey40
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        modifier = Modifier
+                            .size(30.dp),
+                        imageVector = Icons.Outlined.Lock,
+                        contentDescription = null
                     )
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
@@ -277,7 +281,7 @@ fun LoginScreenPage(
                         ),
                         contentDescription = null,
                         modifier = Modifier
-                            .size(20.dp)
+                            .size(30.dp)
                             .clickable {
                                 passwordVisible.value = !passwordVisible.value
                             }
@@ -286,165 +290,79 @@ fun LoginScreenPage(
                 isError = errorUserState.value,
                 keyboardActions = KeyboardActions(onDone = { activity.hideKeyboard() })
             )
-        }
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
             Row(
-                modifier = Modifier.wrapContentWidth(),
-                horizontalArrangement = Arrangement.Start,
+                modifier = Modifier
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Start
             ) {
-                RadioButton(
-                    selected = rememberMeState.value,
-                    onClick = {
-                        rememberMeState.value = !rememberMeState.value
-                    },
-                    colors = RadioButtonDefaults.colors(selectedColor = Color.Blue)
-                )
-
-                Text(
-                    text = "Stay signed in",
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .wrapContentWidth()
-                        .clickable {
-                            rememberMeState.value = !rememberMeState.value
-                        }
-                )
-            }
-            Text(
-                text = "Forgot password?",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                fontSize = 14.sp,
-                modifier = Modifier
-                    .padding(start = 5.dp)
-                    .wrapContentWidth()
-                    .clickable {
-                        forgotPasswordDialogState.value = !forgotPasswordDialogState.value;
-                    }
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(0.10f))
-
-        Button(
-            modifier = Modifier.size(width = 250.dp, height = 50.dp),
-            shape = RoundedCornerShape(50),
-            colors = ButtonDefaults.buttonColors(
-                contentColor = Color.White,
-                backgroundColor = Color.Blue
-            ),
-            onClick = {
-                onLoginClick(UserModel(0, username.value, password.value))
-                setStayIn(rememberMeState.value)
-            }
-
-        ) {
-            Text(text = "Login", fontSize = 20.sp)
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Create account",
-                fontSize = 16.sp,
-
-                )
-
-
-            Text(
-                modifier = Modifier
-                    .padding(
-                        start = 5.dp
-                    )
-                    .clickable {
-                        navController.popBackStack()
-                        navController.navigate(Screen.RegisterScreen.route)
-                    },
-                text = "Click",
-                color = Color.Blue,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
-    }
-
-
-
-    if (forgotPasswordDialogState.value) {
-        JCCAlertDialog(
-            openTheDialog = forgotPasswordDialogState,
-            content = {
-                Column(
-                    modifier = Modifier
-                        .padding(horizontal = 20.dp, vertical = 10.dp)
-                        .background(color = Color.White, shape = RoundedCornerShape(15.dp)),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                )
-                {
-
-                    OutlinedTextField(
-                        textStyle = TextStyle(textAlign = TextAlign.Start, color = Color.Black),
-                        value = forgotUser.value,
-                        onValueChange = {
-                            forgotUser.value = it
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        shape = RoundedCornerShape(10.dp),
-                        singleLine = true,
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            focusedBorderColor = Color.Blue,
-                            cursorColor = Color.Green
-                        ),
-                        placeholder = {
-                            Text(
-                                text = "Username",
-                                fontSize = 15.sp
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email
-                        ),
-                        keyboardActions = KeyboardActions(onDone = { activity.hideKeyboard() })
-                    )
-
-                    Button(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                all = 5.dp
-                            ),
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Blue),
+                Row(
+                    modifier = Modifier.wrapContentWidth(),
+                    horizontalArrangement = Arrangement.Start,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    RadioButton(
+                        selected = rememberMeState.value,
                         onClick = {
-                            forgotPasswordDialogState.value = false
-                            /*if (forgotUserEmail.value.isNotEmpty()) {
-                                viewModel.forgotPassword(email = forgotUserEmail.value)
-                            } else {
-                                activity.toast("Mail adresnizi giriniz!")
-                            }*/
-                        }) {
-                        Text(
-                            text = "Re Password",
-                            style = TextStyle(textAlign = TextAlign.Center)
-                        )
+                            rememberMeState.value = !rememberMeState.value
+                        },
+                        colors = RadioButtonDefaults.colors(selectedColor = ColorApp30)
+                    )
 
-                    }
-
+                    Text(
+                        text = "Stay signed in",
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .wrapContentWidth()
+                            .clickable {
+                                rememberMeState.value = !rememberMeState.value
+                            }
+                    )
                 }
-            },
-            title = "Enter Your Username"
-        )
+            }
+
+            Spacer(modifier = Modifier.weight(0.10f))
+
+            Button(
+                modifier = Modifier.size(width = 300.dp, height = 50.dp),
+                shape = RoundedCornerShape(25),
+                colors = ButtonDefaults.buttonColors(
+                    contentColor = Color.White,
+                    backgroundColor = ColorApp30
+                ),
+                onClick = {
+                    onLoginClick(UserModel(0, username.value, password.value))
+                    setStayIn(rememberMeState.value)
+                }
+
+            ) {
+                Text(text = "Login", fontSize = 20.sp)
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "Don't have an account",
+                    fontSize = 16.sp,
+                )
+                Text(
+                    modifier = Modifier
+                        .padding(
+                            start = 5.dp
+                        )
+                        .clickable {
+                            onRegisterClick()
+                        },
+                    text = "Register",
+                    color = ColorApp30,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+        }
     }
 }
