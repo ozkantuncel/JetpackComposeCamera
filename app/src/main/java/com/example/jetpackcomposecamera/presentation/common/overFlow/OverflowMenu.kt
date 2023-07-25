@@ -13,8 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.example.jetpackcomposecamera.presentation.ui.theme.ColorApp10
 
 
 @Composable
@@ -25,6 +27,7 @@ fun OverflowMenu(showMenu: MutableState<Boolean>, content: @Composable () -> Uni
         showMenu.value = !showMenu.value
     }) {
         Icon(
+            tint = Color.White,
             imageVector = Icons.Outlined.MoreVert,
             contentDescription = null,
         )
@@ -47,12 +50,13 @@ fun DropDownItemPager(
 
     DropdownMenuItem(onClick = onClick) {
         Icon(
+            tint = ColorApp10,
             imageVector = imageVector,
             contentDescription = null,
             modifier = modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
-        Text(text)
+        Text(text = text, color = ColorApp10,)
     }
 }
 

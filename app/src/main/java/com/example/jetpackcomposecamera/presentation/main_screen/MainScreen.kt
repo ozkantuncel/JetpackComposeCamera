@@ -12,14 +12,11 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Favorite
-import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -31,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -43,7 +41,8 @@ import com.example.jetpackcomposecamera.presentation.common.overFlow.DropDownIte
 import com.example.jetpackcomposecamera.presentation.common.overFlow.OverflowMenu
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
-import com.example.jetpackcomposecamera.presentation.ui.theme.Purple40
+import com.example.jetpackcomposecamera.presentation.ui.theme.ColorApp60
+import com.example.jetpackcomposecamera.util.hawk.Prefs.setStayIn
 import com.example.jetpackcomposecamera.util.mkDir
 import com.example.jetpackcomposecamera.util.toast
 import java.lang.Exception
@@ -82,6 +81,13 @@ fun MainScreen(
                 errorTitle = errorTitle,
                 errorMsg = errorMsg
             )
+            showMenu.value = false
+        },
+        onClickLogOut = {
+            setStayIn(false)
+            navController.popBackStack()
+            navController.navigate(Screen.LoginScreen.route)
+            showMenu.value = false
         }
     )
     // Eğer errorDialogState değeri true ise, bir Custom bir Alert Dialog gösterir.
@@ -102,8 +108,11 @@ fun MainPage(
     imageList: State<List<ImageModel>>,
     showMenu: MutableState<Boolean>,
     deleteImage: (ImageModel) -> Unit,
-    onClickDeleteButton: () -> Unit
+    onClickDeleteButton: () -> Unit,
+    onClickLogOut: () -> Unit
 ) {
+
+
     // Genel olarak, Scaffold, bir ekranın veya sayfanın iskeletini oluşturmak için kullanılır.
     // Material Design bileşenleri için yuvalar sağlar.
     // Scaffold, bir Material Design uygulamasının temel yapısını uygulamak için kullanılırken, Surface bir Material Design yüzeyini temsil etmek için kullanılır.
@@ -111,44 +120,25 @@ fun MainPage(
         //TopAppBar: Sayfanın üst kısmında yer alan bir navigasyon çubuğu.
         TopAppBar(
             title = {},
-            navigationIcon = {
-                IconButton(onClick = {
-                    //TODO()
-                }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Person,
-                        contentDescription = null
-                    )
-                }
-            },
             actions = {
-                IconButton(onClick = {
-                    //TODO()
-                }) {
-                    Icon(
-                        imageVector = Icons.Outlined.Favorite,
-                        contentDescription = null
-                    )
-                }
                 OverflowMenu(showMenu = showMenu) {
-
                     DropDownItemPager(
                         imageVector = Icons.Outlined.Delete,
                         text = "Delete All"
                     ) {
                         onClickDeleteButton()
-                        showMenu.value = false
                     }
 
                     DropDownItemPager(
                         imageVector = Icons.Outlined.Warning,
                         text = "Log out"
                     ) {
-                        //TODO()
+                        onClickLogOut()
+
                     }
                 }
             },
-            colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = Purple40)
+            colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = ColorApp60,)
         )
     }, content = { padding ->
 
@@ -167,13 +157,21 @@ fun MainPage(
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+
                     itemsIndexed(imageList.value) { index, image ->
+                        var count = imageList.value.count{ it.user_name == image.user_name}
+
+                        if(index == 0){
+                            JCCBox(floatColor = count,username = image.user_name)
+                        }
+
                         CardImage(image = image) {
                             deleteImage(it)
                         }
-                        //  // Her 3 öğeden sonra bir JCCBox bileşeni görünür
-                        if ((index + 1) % 3 == 0 && index != imageList.value.lastIndex) {
-                            JCCBox()
+
+                        if (index == (count-1)&& count < imageList.value.size) {
+                            count = imageList.value.count{ it.user_name == imageList.value[index+1].user_name}
+                            JCCBox(floatColor = count, username = imageList.value[index+1].user_name)
                         }
                     }
                 }
@@ -185,8 +183,12 @@ fun MainPage(
             FloatingActionButton(onClick = {
                 navController.popBackStack()
                 navController.navigate(Screen.CameraView.route)
-            }, shape = RoundedCornerShape(50), contentColor = Purple40) {
+            }, shape = RoundedCornerShape(50),
+                contentColor = ColorApp60,
+                containerColor = ColorApp60,
+            ) {
                 Icon(
+                    tint = Color.White,
                     painter = painterResource(id = R.drawable.camera_ico),
                     contentDescription = "camera_ico"
                 )
@@ -196,7 +198,7 @@ fun MainPage(
 
 }
 
-fun deleteAllPictures(
+private fun deleteAllPictures(
     context: Context,
     viewModel: MainScreenViewModel,
     errorState: MutableState<Boolean>,

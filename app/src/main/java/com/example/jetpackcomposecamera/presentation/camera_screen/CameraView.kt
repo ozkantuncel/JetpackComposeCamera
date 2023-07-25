@@ -39,6 +39,7 @@ import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
+import com.example.jetpackcomposecamera.presentation.ui.theme.ColorApp60
 import com.example.jetpackcomposecamera.util.hawk.Prefs.getUsername
 import com.example.jetpackcomposecamera.util.mkDirControl
 import kotlinx.coroutines.CoroutineScope
@@ -187,7 +188,7 @@ fun CameraViewPage(
                 Icon(
                     painter = painterResource(id = R.drawable.lens_v),
                     contentDescription = null,
-                    tint = Color.Blue,
+                    tint = ColorApp60,
                     modifier = Modifier
                         .size(150.dp)
                         .padding(1.dp)
