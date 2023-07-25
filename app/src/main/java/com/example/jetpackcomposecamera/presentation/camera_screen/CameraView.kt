@@ -40,6 +40,7 @@ import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.util.hawk.Prefs.getUsername
+import com.example.jetpackcomposecamera.util.mkDirControl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
