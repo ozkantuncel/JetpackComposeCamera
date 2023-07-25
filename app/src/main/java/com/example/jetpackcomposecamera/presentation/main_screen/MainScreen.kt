@@ -7,10 +7,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -28,6 +31,7 @@ import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.presentation.ui.theme.Purple40
+import com.example.jetpackcomposecamera.util.hawk.Prefs.setStayIn
 
 @Composable
 fun MainScreen(
@@ -57,7 +61,16 @@ fun MainPage(
     Scaffold(topBar = {
         TopAppBar(
             title = {},
-            colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = Purple40)
+            colors = TopAppBarDefaults.largeTopAppBarColors(containerColor = Purple40),
+            actions = {
+                IconButton(onClick = {
+                    setStayIn(false)
+                    navController.popBackStack()
+                    navController.navigate(Screen.LoginScreen.route)
+                }) {
+                    Icon(imageVector = Icons.Outlined.Close, contentDescription =null )
+                }
+            }
         )
     }, content = { padding ->
         Column(

@@ -1,16 +1,15 @@
 package com.example.jetpackcomposecamera.di
 
-
+import android.app.Application
 import android.content.Context
-import dagger.hilt.android.HiltAndroidApp
 
-@HiltAndroidApp
-class JetpackComposeCameraApp:CoreLibApplication(){
+open class CoreLibApplication:Application() {
     init {
         instance = this
     }
-    companion object{
-        lateinit var instance:JetpackComposeCameraApp
+
+    companion object {
+        lateinit var instance: Application
 
         fun applicationContext(): Context {
             return instance.applicationContext

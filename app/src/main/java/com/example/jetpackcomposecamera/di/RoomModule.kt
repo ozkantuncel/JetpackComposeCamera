@@ -3,6 +3,7 @@ package com.example.jetpackcomposecamera.di
 import android.content.Context
 import androidx.room.Room
 import com.example.jetpackcomposecamera.data.local.dao.ImageDao
+import com.example.jetpackcomposecamera.data.local.dao.UserDao
 import com.example.jetpackcomposecamera.data.local.database.ImageDatabase
 import com.example.jetpackcomposecamera.util.Constant
 import dagger.Module
@@ -28,4 +29,8 @@ object RoomModule {
     @Provides
     @Singleton
     fun provideImageDataDao(database: ImageDatabase): ImageDao = database.imageDao()
+
+    @Provides
+    @Singleton
+    fun provideUserDao(database: ImageDatabase):UserDao = database.userDao()
 }
