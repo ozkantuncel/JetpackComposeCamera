@@ -110,4 +110,7 @@ dependencies {
 
     // Lottie
     implementation "com.airbnb.android:lottie-compose:$lottieVersion"
+
+    // Hawk
+    implementation("com.orhanobut:hawk:2.0.1")
 }
