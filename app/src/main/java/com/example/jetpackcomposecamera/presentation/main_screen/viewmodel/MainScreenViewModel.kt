@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.data.repository.ImageDaoRepositoryImpl
+import com.example.jetpackcomposecamera.util.hawk.Prefs.getUsername
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import java.io.File
@@ -41,16 +42,16 @@ class MainScreenViewModel @Inject constructor(
         }
     }
 
-    fun deleteAll(mkDir:File){
+    fun deleteAll(imageUserList:List<ImageModel>){
         viewModelScope.launch {
-            repository.deleteAll()
-            fetchData()
-            mkDir.listFiles()?.let { files ->
-                for (file in files) {
-                    file.delete()
-                }
+            val username = getUsername()
+            repository.deleteAll(username = username)
+            for(image in imageUserList){
+                val fileToDelete = File(image.image_dir)
+                println(image.image_dir)
+                fileToDelete.delete()
             }
-
+            fetchData()
         }
     }
 

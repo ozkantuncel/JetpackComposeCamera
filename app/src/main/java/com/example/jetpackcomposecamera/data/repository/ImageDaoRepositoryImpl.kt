@@ -40,7 +40,7 @@ class ImageDaoRepositoryImpl @Inject constructor(
 
 
     }
-    override suspend fun deleteAll() {
-        imageDao.deleteAll()
+    override suspend fun deleteAll(username:String) {
+        imageDao.deleteAll(username = username)
     }
 }

@@ -42,8 +42,8 @@ import com.example.jetpackcomposecamera.presentation.common.overFlow.OverflowMen
 import com.example.jetpackcomposecamera.presentation.main_screen.viewmodel.MainScreenViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.presentation.ui.theme.ColorApp60
+import com.example.jetpackcomposecamera.util.hawk.Prefs.getUsername
 import com.example.jetpackcomposecamera.util.hawk.Prefs.setStayIn
-import com.example.jetpackcomposecamera.util.mkDir
 import com.example.jetpackcomposecamera.util.toast
 import java.lang.Exception
 
@@ -76,6 +76,7 @@ fun MainScreen(
         onClickDeleteButton = {
             deleteAllPictures(
                 context = context,
+                imageList= imageList.value,
                 viewModel = viewModel,
                 errorState = errorDialogState,
                 errorTitle = errorTitle,
@@ -200,25 +201,24 @@ fun MainPage(
 
 private fun deleteAllPictures(
     context: Context,
+    imageList: List<ImageModel>,
     viewModel: MainScreenViewModel,
     errorState: MutableState<Boolean>,
     errorTitle: MutableState<String>,
     errorMsg: MutableState<String>
 ) {
     try {
-        val directory = context.mkDir()
+        val username = getUsername()
+        val userImages = imageList.filter { it.user_name == username }
 
-        val files = directory.listFiles()
-
-        if (files?.isNotEmpty() == true) {
-            viewModel.deleteAll(directory)
+        if (userImages.isNotEmpty()) {
+            viewModel.deleteAll(userImages)
             context.toast("All pictures deleted")
         } else {
             errorState.value = true
             errorTitle.value = "No Image"
             errorMsg.value = "Image not added"
         }
-
     } catch (e: Exception) {
         errorState.value = true
         errorTitle.value = e.message.toString()

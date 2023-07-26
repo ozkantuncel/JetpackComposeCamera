@@ -26,8 +26,8 @@ interface ImageDao {
     @Delete
     suspend fun deleteImage(image: ImageModel)
 
-    @Query("DELETE FROM image_table")
-    suspend fun deleteAll()
+    @Query("DELETE FROM image_table Where user_name = :username")
+    suspend fun deleteAll(username:String)
 
     /*
     suspend anahtar vardır,

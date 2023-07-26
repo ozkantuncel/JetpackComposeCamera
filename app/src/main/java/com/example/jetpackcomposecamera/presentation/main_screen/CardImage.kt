@@ -37,6 +37,7 @@ import coil.compose.rememberAsyncImagePainter
 import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.ui.theme.Color2App10
+import com.example.jetpackcomposecamera.util.hawk.Prefs.getUsername
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +49,8 @@ fun CardImage(
         mutableStateOf(false)
     }
     var stroke by remember { mutableStateOf(1) }
+
+    val currentUser = getUsername()
 
     Card(modifier = Modifier
         .animateContentSize(
@@ -107,11 +110,13 @@ fun CardImage(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold
                     )
-                    IconButton(onClick = { onButtonClick(image) }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.del_ico),
-                            contentDescription = null
-                        )
+                    if(image.user_name == currentUser) {
+                        IconButton(onClick = { onButtonClick(image) }) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.del_ico),
+                                contentDescription = null
+                            )
+                        }
                     }
 
                 }

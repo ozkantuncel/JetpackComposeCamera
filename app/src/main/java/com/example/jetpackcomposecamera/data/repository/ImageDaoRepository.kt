@@ -12,5 +12,5 @@ interface ImageDaoRepository {
 
     suspend fun insertImage(imageModel: ImageModel)
 
-    suspend fun deleteAll()
+    suspend fun deleteAll(username:String)
 }
