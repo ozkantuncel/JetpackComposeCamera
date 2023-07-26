@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
 import com.example.jetpackcomposecamera.util.hawk.Prefs
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -22,13 +21,19 @@ class SplashViewModel:ViewModel() {
 
     init {
         viewModelScope.launch {
-            if(getRememberMeState()){
-                _startDestination.value = Screen.MainScreen.route
+
+            if(getOnBoardingScreen()){
+                if(getRememberMeState()){
+                    _startDestination.value = Screen.MainScreen.route
+                }else{
+                    _startDestination.value = Screen.LoginScreen.route
+                }
             }else{
-                _startDestination.value = Screen.LoginScreen.route
+                _startDestination.value = Screen.OnBoardingScreen.route
             }
 
-            delay(2000)
+
+            delay(1000)
             _isLoading.value = false
         }
     }
@@ -37,5 +42,9 @@ class SplashViewModel:ViewModel() {
 
     private fun getRememberMeState(): Boolean {
         return Prefs.isStayIn()
+    }
+
+    private fun getOnBoardingScreen():Boolean{
+        return Prefs.isShowedOnBoarding()
     }
 }
