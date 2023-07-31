@@ -29,7 +29,6 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Environment
 import com.example.jetpackcomposecamera.presentation.common.dialog.JCCAlertDialog
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -40,7 +39,9 @@ import com.example.jetpackcomposecamera.R
 import com.example.jetpackcomposecamera.data.model.ImageModel
 import com.example.jetpackcomposecamera.presentation.camera_screen.viewmodel.CameraViewModel
 import com.example.jetpackcomposecamera.presentation.navigation.Screen
+import com.example.jetpackcomposecamera.presentation.ui.theme.ColorApp60
 import com.example.jetpackcomposecamera.util.hawk.Prefs.getUsername
+import com.example.jetpackcomposecamera.util.mkDirControl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -165,7 +166,7 @@ fun CameraViewPage(
             onClick = {
                 takePhoto(
                     imageCapture = imageCapture,
-                    outputDirectory = getDirectoryFile(context = context),
+                    outputDirectory = context.mkDirControl(),
                     executor = cameraExecutor,
                     addImage = {
                         addImage(it)
@@ -187,7 +188,7 @@ fun CameraViewPage(
                 Icon(
                     painter = painterResource(id = R.drawable.lens_v),
                     contentDescription = null,
-                    tint = Color.Blue,
+                    tint = ColorApp60,
                     modifier = Modifier
                         .size(150.dp)
                         .padding(1.dp)
@@ -243,12 +244,6 @@ private fun takePhoto(
     })
 }
 
-private fun getDirectoryFile(context: Context): File {
-    val mediaDir = context.getExternalFilesDirs(Environment.DIRECTORY_PICTURES).firstOrNull()?.let {
-        File(it, context.resources.getString(R.string.takenPhoto)).apply { mkdirs() }
-    }
-    return if (mediaDir != null && mediaDir.exists()) mediaDir else context.filesDir
-}
 
 private suspend fun Context.getCameraProvider(): ProcessCameraProvider =
     suspendCoroutine {

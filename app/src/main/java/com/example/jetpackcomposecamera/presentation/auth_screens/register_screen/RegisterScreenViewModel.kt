@@ -33,8 +33,4 @@ class RegisterScreenViewModel @Inject constructor(
             _user.value = UiState.Failure("Sifre yetersiz")
         }
     }
-
-    /*private  fun controlUser(username:String){
-        val a = repository.checkUsernameExistence(username)
-    }*/
 }

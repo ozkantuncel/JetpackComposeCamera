@@ -20,7 +20,7 @@ val AppBackgroundDarkColor = Color.Black
 val ColorApp60 = Color(0xFF3AA247)
 val ColorApp30 = Color(0xFF59A847)
 val ColorApp10 = Color(0xFF819D3A)
-val Color2App10 = Color(0xFFC0C8BC)
+val Color2App10 = Color(0xFFE6FFD6)
 
 val ColorDark60 = Color(0xFF1E1E1E)
 val ColorDark30 = Color(0xFF3AA247)

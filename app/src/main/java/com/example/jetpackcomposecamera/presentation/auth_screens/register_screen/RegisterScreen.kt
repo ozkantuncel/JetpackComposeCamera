@@ -338,7 +338,7 @@ fun RegisterPage(
                         },
                         label = {
                             Text(
-                                text = "Password",
+                                text = "Password(Again)",
                                 color = PurpleGrey40
                             )
                         },
@@ -398,7 +398,7 @@ fun RegisterPage(
                                     setStayIn(true)
                                 } else {
                                     errorUserState.value = true
-                                    errorTitle.value = "Sifreler aynı olamaz"
+                                    errorTitle.value = "Girdiğiniz şifre aynı olmalıdır "
                                 }
                             }else{
                                 errorUserState.value = true

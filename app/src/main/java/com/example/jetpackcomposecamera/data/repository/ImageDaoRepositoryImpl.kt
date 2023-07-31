@@ -18,16 +18,29 @@ class ImageDaoRepositoryImpl @Inject constructor(
     override suspend fun getImagesByNameAsc(): List<ImageModel> {
         return try {
             val imageList = imageDao.getImagesByNameAsc()
-            imageList
-        }catch (e:Exception){
+
+            val sortedList = imageList.groupBy { it.user_name }
+                .mapValues { it.value.size }
+                .toList()
+                .sortedByDescending { it.second }
+                .flatMap { entry -> imageList.filter { it.user_name == entry.first } }
+
+            sortedList
+        } catch (e: Exception) {
             TODO()
         }
     }
+
     override suspend fun deleteImage(imageModel: ImageModel) {
         imageDao.deleteImage(image = imageModel)
     }
-    override suspend fun insertImage(imageModel: ImageModel) {
-        imageDao.insertImage(image =imageModel )
 
+    override suspend fun insertImage(imageModel: ImageModel) {
+        imageDao.insertImage(image = imageModel)
+
+
+    }
+    override suspend fun deleteAll(username:String) {
+        imageDao.deleteAll(username = username)
     }
 }

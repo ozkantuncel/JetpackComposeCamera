@@ -8,6 +8,7 @@ import com.example.jetpackcomposecamera.presentation.auth_screens.login_screen.L
 import com.example.jetpackcomposecamera.presentation.auth_screens.register_screen.RegisterScreen
 import com.example.jetpackcomposecamera.presentation.camera_screen.CameraView
 import com.example.jetpackcomposecamera.presentation.main_screen.MainScreen
+import com.example.jetpackcomposecamera.presentation.on_boarding_screen.OnBoardingScreen
 
 @Composable
 fun NavGraph(
@@ -33,6 +34,10 @@ fun NavGraph(
 
         composable(route = Screen.LoginScreen.route){
             LoginScreen(navController = navHostController)
+        }
+
+        composable(route = Screen.OnBoardingScreen.route){
+            OnBoardingScreen(navController = navHostController)
         }
     }
 }
